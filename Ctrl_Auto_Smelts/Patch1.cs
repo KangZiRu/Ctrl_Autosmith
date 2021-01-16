@@ -64,9 +64,28 @@ namespace Ctrl_Auto_Smelts
 					ItemRoster itemRoster = MobileParty.MainParty.ItemRoster;
 					int charcoalCount = itemRoster.GetItemNumber(charcoalItemVM.ResourceItem);
 					int smeltItemCount = itemRoster.GetItemNumber(smeltedItem);
-					int smeltAmount = Math.Min(Math.Min(smeltItemCount * charcoalItemVM.ResourceAmount, charcoalCount), maxFailSafe); // 4 swords, 10 charcoal = 4 smelted items. 10 swords, 2 charcoal = 2 smelted items.
+					int smeltAmountByMaterial = Math.Min(Math.Min(smeltItemCount * charcoalItemVM.ResourceAmount, charcoalCount), maxFailSafe); // 4 swords, 10 charcoal = 4 smelted items. 10 swords, 2 charcoal = 2 smelted items.
+
+					int energyCostForSmelting = Campaign.Current.Models.SmithingModel.GetEnergyCostForSmelting(smeltedItem, currentCraftingHero);
+					int currentStamina = ____smithingBehavior.GetHeroCraftingStamina(currentCraftingHero);
+					int maxSmeltAmountByStamina = currentStamina / energyCostForSmelting;
+
+					int staminaRemaining = currentStamina - (maxSmeltAmountByStamina * (energyCostForSmelting - 1));
+					if (staminaRemaining <= 10)
+					{
+						maxSmeltAmountByStamina--;
+						if (staminaRemaining >= energyCostForSmelting && staminaRemaining < 10)
+						{
+							maxSmeltAmountByStamina--;
+						}
+					}
+
+					int smeltAmount = Math.Min(smeltAmountByMaterial, maxSmeltAmountByStamina);
+
+					WriteLog($"Smelt amount: {smeltAmount}");
 
 					bool hasRequiredMaterials = currentSmeltItemVM.InputMaterials != null && currentSmeltItemVM.InputMaterials.Count > 0;
+					
 					if (hasRequiredMaterials)
 					{
 						while (____currentSelectedItem != null && currentSmeltItemVM != null && smeltAmount > 0)
@@ -74,6 +93,7 @@ namespace Ctrl_Auto_Smelts
 							__instance.SmeltSelectedItems(currentCraftingHero);
 							smeltAmount--;
 							bool hasNoMaterialsOrSmeltingIsDone = !(currentSmeltItemVM != __instance.CurrentSelectedItem || (currentSmeltItemVM.InputMaterials?.Count > 0));
+
 							if (hasNoMaterialsOrSmeltingIsDone)
 							{
 								break;

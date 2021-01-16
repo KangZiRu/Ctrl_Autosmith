@@ -1,6 +1,7 @@
 ﻿using System;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.SandBox.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Craft.Refinement;
 using TaleWorlds.Core;
 using TaleWorlds.InputSystem;
@@ -24,15 +25,15 @@ namespace Ctrl_Auto_Smelts
 				bool isCtrlHeldDown = Input.IsKeyDown(InputKey.LeftControl);
 				bool isShiftHeldDown = Input.IsKeyDown(InputKey.LeftShift);
 
-				int maxFailSafe;
+				int maxRefine;
 
 				if (isCtrlHeldDown)
 				{
-					maxFailSafe = 100;
+					maxRefine = 100;
 				}
 				else if (isShiftHeldDown)
 				{
-					maxFailSafe = 5;
+					maxRefine = 5;
 				}
 				else
 				{
@@ -41,7 +42,28 @@ namespace Ctrl_Auto_Smelts
 
 				shouldRun = false;
 
-				while (maxFailSafe-- > 0 && ____currentSelectedAction != null)
+				var smithingBehavior = Campaign.Current.GetCampaignBehavior<ICraftingCampaignBehavior>();
+
+				var refineFormula = ____currentSelectedAction.RefineFormula;
+				int energyCostForRefining = Campaign.Current.Models.SmithingModel.GetEnergyCostForRefining(ref refineFormula, currentCraftingHero);
+				int currentStamina = smithingBehavior.GetHeroCraftingStamina(currentCraftingHero);
+				int maxRefineAmountByStamina = currentStamina / energyCostForRefining;
+
+				int staminaRemaining = currentStamina - (maxRefineAmountByStamina * (energyCostForRefining - 1));
+				if (staminaRemaining <= 10)
+				{
+					maxRefineAmountByStamina--;
+					if (staminaRemaining >= energyCostForRefining && staminaRemaining < 10)
+					{
+						maxRefineAmountByStamina--;
+					}
+				}
+
+				maxRefine = Math.Min(maxRefine, maxRefineAmountByStamina);
+
+				WriteLog($"Refine amount: {maxRefine}");
+
+				while (maxRefine-- > 0 && ____currentSelectedAction != null)
 				{
 					__instance.ExecuteSelectedRefinement(currentCraftingHero);
 				}
