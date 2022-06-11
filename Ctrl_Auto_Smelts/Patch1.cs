@@ -2,11 +2,12 @@
 using HarmonyLib;
 using TaleWorlds.Core;
 using TaleWorlds.CampaignSystem;
-using TaleWorlds.CampaignSystem.SandBox.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Craft.Smelting;
 using TaleWorlds.InputSystem;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Craft;
-
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
+using TaleWorlds.CampaignSystem.Roster;
+using TaleWorlds.CampaignSystem.Party;
 
 namespace Ctrl_Auto_Smelts
 {
@@ -68,7 +69,7 @@ namespace Ctrl_Auto_Smelts
 
 					int energyCostForSmelting = Campaign.Current.Models.SmithingModel.GetEnergyCostForSmelting(smeltedItem, currentCraftingHero);
 					int currentStamina = ____smithingBehavior.GetHeroCraftingStamina(currentCraftingHero);
-					int maxSmeltAmountByStamina = currentStamina / energyCostForSmelting;
+					int maxSmeltAmountByStamina = energyCostForSmelting > 0 ? currentStamina / energyCostForSmelting : maxFailSafe;
 
 					int staminaRemaining = currentStamina - (maxSmeltAmountByStamina * (energyCostForSmelting - 1));
 					if (staminaRemaining <= 10)
@@ -90,7 +91,7 @@ namespace Ctrl_Auto_Smelts
 					{
 						while (____currentSelectedItem != null && currentSmeltItemVM != null && smeltAmount > 0)
 						{
-							__instance.SmeltSelectedItems(currentCraftingHero);
+							__instance.TrySmeltingSelectedItems(currentCraftingHero);
 							smeltAmount--;
 							bool hasNoMaterialsOrSmeltingIsDone = !(currentSmeltItemVM != __instance.CurrentSelectedItem || (currentSmeltItemVM.InputMaterials?.Count > 0));
 

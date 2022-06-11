@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows;
 using HarmonyLib;
-using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
 
 namespace Ctrl_Auto_Smelts

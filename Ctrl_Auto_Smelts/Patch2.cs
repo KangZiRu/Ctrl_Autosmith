@@ -1,7 +1,7 @@
 ﻿using System;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem;
-using TaleWorlds.CampaignSystem.SandBox.CampaignBehaviors;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Craft.Refinement;
 using TaleWorlds.Core;
 using TaleWorlds.InputSystem;
@@ -47,7 +47,7 @@ namespace Ctrl_Auto_Smelts
 				var refineFormula = ____currentSelectedAction.RefineFormula;
 				int energyCostForRefining = Campaign.Current.Models.SmithingModel.GetEnergyCostForRefining(ref refineFormula, currentCraftingHero);
 				int currentStamina = smithingBehavior.GetHeroCraftingStamina(currentCraftingHero);
-				int maxRefineAmountByStamina = currentStamina / energyCostForRefining;
+				int maxRefineAmountByStamina = energyCostForRefining > 0 ? currentStamina / energyCostForRefining : maxRefine;
 
 				int staminaRemaining = currentStamina - (maxRefineAmountByStamina * (energyCostForRefining - 1));
 				if (staminaRemaining <= 10)
